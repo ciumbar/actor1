@@ -1,168 +1,230 @@
 /**
- * Google Maps scraper - Robust version
- * Uses stealth mode + correct selectors
+ * Google Maps scraper - Versión profesional
+ * Técnica: interceptar requests XHR de la app de Maps
+ * Igual que compass/crawler-google-places (334K usuarios)
  */
 import { PlaywrightCrawler, sleep } from 'crawlee';
 import { extractEmailsFromText, getEmailConfidenceScore } from '../emailVerifier.js';
 import { extractPhoneNumbers, extractWhatsAppFromContent, isProbablyWhatsApp, normalizePhoneNumber, COUNTRY_CODES } from '../whatsappVerifier.js';
 
 const INDUSTRY_QUERIES = {
-  restaurants: 'restaurantes',
-  hotels: 'hoteles',
-  real_estate: 'inmobiliaria',
-  construction: 'empresa construcción',
-  law_firms: 'abogados',
-  medical_clinics: 'clínica médica',
-  dentists: 'dentista',
-  gyms_fitness: 'gimnasio',
-  beauty_salons: 'peluquería salón belleza',
-  auto_dealerships: 'concesionario coches',
-  accounting_finance: 'gestoría asesoría',
-  it_technology: 'empresa informática tecnología',
-  marketing_agencies: 'agencia marketing',
-  retail_stores: 'tienda',
-  education_schools: 'academia escuela',
-  logistics_transport: 'empresa transporte',
-  manufacturing: 'empresa fabricación',
-  travel_agencies: 'agencia de viajes',
-  insurance: 'correduría seguros',
-  e_commerce: 'tienda online'
+  restaurants: 'restaurantes', hotels: 'hoteles', real_estate: 'inmobiliaria',
+  construction: 'empresa construccion', law_firms: 'abogados', medical_clinics: 'clinica medica',
+  dentists: 'dentista', gyms_fitness: 'gimnasio', beauty_salons: 'peluqueria salon belleza',
+  auto_dealerships: 'concesionario coches', accounting_finance: 'gestoria asesoria',
+  it_technology: 'empresa informatica', marketing_agencies: 'agencia marketing',
+  retail_stores: 'tienda comercio', education_schools: 'academia escuela',
+  logistics_transport: 'empresa transporte', manufacturing: 'fabrica industria',
+  travel_agencies: 'agencia viajes', insurance: 'seguros', e_commerce: 'tienda online'
 };
-
-function buildSearchUrl(industry, country, city) {
-  const query = INDUSTRY_QUERIES[industry] || industry;
-  const location = city || country;
-  return `https://www.google.com/maps/search/${encodeURIComponent(`${query} ${location}`)}`;
-}
 
 export async function scrapeGoogleMaps({ industry, country, city, maxResults, proxyConfig, log, pushData }) {
   const countryCode = COUNTRY_CODES[country] || '';
-  const searchUrl = buildSearchUrl(industry, country, city);
+  const query = `${INDUSTRY_QUERIES[industry] || industry} ${city || country}`;
+  const searchUrl = `https://www.google.com/maps/search/${encodeURIComponent(query)}`;
   const results = [];
 
-  log.info(`🗺️ Google Maps URL: ${searchUrl}`);
+  log.info(`🗺️ Google Maps: "${query}"`);
 
   const crawler = new PlaywrightCrawler({
     proxyConfiguration: proxyConfig,
-    maxRequestRetries: 2,
+    maxRequestRetries: 3,
     navigationTimeoutSecs: 90,
-    requestHandlerTimeoutSecs: 180,
+    requestHandlerTimeoutSecs: 300,
     headless: true,
     launchContext: {
       launchOptions: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled', '--lang=es-ES,es'],
+        args: [
+          '--no-sandbox', '--disable-setuid-sandbox',
+          '--disable-blink-features=AutomationControlled',
+          '--disable-web-security', '--lang=es-ES',
+        ],
       },
     },
     preNavigationHooks: [
       async ({ page }) => {
+        // Eliminar señales de bot
         await page.addInitScript(() => {
+          delete Object.getPrototypeOf(navigator).webdriver;
           Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+          Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
+          Object.defineProperty(navigator, 'languages', { get: () => ['es-ES', 'es'] });
+          window.chrome = { runtime: {} };
         });
-        await page.setExtraHTTPHeaders({ 'Accept-Language': 'es-ES,es;q=0.9' });
+        await page.setExtraHTTPHeaders({
+          'Accept-Language': 'es-ES,es;q=0.9',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Cache-Control': 'no-cache',
+        });
       },
     ],
 
     async requestHandler({ page, request, log: L }) {
       if (results.length >= maxResults) return;
-      L.info(`Processing: ${request.label} - ${request.url}`);
-
-      // Accept cookies
-      try {
-        await page.waitForSelector('button[aria-label*="Aceptar"], button[aria-label*="Accept"], form[action*="consent"] button', { timeout: 5000 });
-        await page.click('button[aria-label*="Aceptar"], button[aria-label*="Accept"], form[action*="consent"] button');
-        await sleep(1500);
-      } catch { /* no cookie banner */ }
+      L.info(`📍 [${request.label}] ${request.url.substring(0, 80)}`);
 
       if (request.label === 'SEARCH') {
-        // Wait for feed
-        await page.waitForSelector('div[role="feed"], div.Nv2PK', { timeout: 25000 }).catch(() => {});
-        await sleep(2000);
+        // Aceptar cookies Google
+        try {
+          await page.waitForSelector('button', { timeout: 6000 });
+          const buttons = await page.$$('button');
+          for (const btn of buttons) {
+            const txt = (await btn.textContent()) || '';
+            if (txt.includes('Acepto') || txt.includes('Accept') || txt.includes('Agree') || txt.includes('Aceptar')) {
+              await btn.click();
+              await sleep(1000);
+              break;
+            }
+          }
+        } catch { /* sin banner */ }
 
-        // Scroll to load more
-        const scrolls = Math.min(Math.ceil(maxResults / 7) + 2, 20);
+        // Esperar feed de resultados
+        try {
+          await page.waitForSelector('div[role="feed"]', { timeout: 20000 });
+        } catch {
+          // Intentar selector alternativo
+          await page.waitForSelector('[jstcache]', { timeout: 10000 }).catch(() => {});
+        }
+        await sleep(2500);
+
+        // Scroll para cargar resultados
+        const scrolls = Math.min(Math.ceil(maxResults / 6) + 3, 25);
         for (let i = 0; i < scrolls; i++) {
           await page.evaluate(() => {
             const feed = document.querySelector('div[role="feed"]');
-            if (feed) feed.scrollBy(0, 600);
+            if (feed) feed.scrollBy(0, 500);
+            else window.scrollBy(0, 500);
           });
-          await sleep(700);
+          await sleep(600);
         }
 
-        // Extract place links
+        // Extraer todos los enlaces de lugares
         const places = await page.evaluate(() => {
           const seen = new Set();
-          const items = [];
+          const out = [];
+
+          // Selector principal: tarjetas con enlace a /maps/place/
           document.querySelectorAll('a[href*="/maps/place/"]').forEach(a => {
-            if (seen.has(a.href)) return;
-            seen.add(a.href);
-            const card = a.closest('[jsaction]') || a.closest('li') || a.parentElement;
-            const name = (card?.querySelector('.qBF1Pd, .fontHeadlineSmall, [class*="fontHeadline"]')?.textContent
-                       || a.textContent || '').trim();
-            const address = (card?.querySelector('.W4Efsd .W4Efsd span:last-child, .Io6YTe, .W4Efsd span')?.textContent || '').trim();
-            const ratingLabel = card?.querySelector('[aria-label*="star"], [aria-label*="estrell"]')?.getAttribute('aria-label') || '';
-            const ratingMatch = ratingLabel.match(/[\d.]+/);
-            if (name && a.href.includes('/maps/place/')) {
-              items.push({ href: a.href, name, address, rating: ratingMatch ? parseFloat(ratingMatch[0]) : null });
+            const href = a.href.split('?')[0]; // Limpiar parámetros
+            if (seen.has(href) || !href.includes('/maps/place/')) return;
+            seen.add(href);
+
+            // Subir en el DOM para encontrar la tarjeta padre
+            let card = a;
+            for (let i = 0; i < 8; i++) {
+              card = card.parentElement;
+              if (!card) break;
+              const h3 = card.querySelector('h3, [class*="fontHeadline"], .qBF1Pd');
+              if (h3) {
+                const name = h3.textContent?.trim();
+                if (name) {
+                  // Rating
+                  const ratingEl = card.querySelector('[aria-label*="star"], [aria-label*="estrell"], span[role="img"]');
+                  const ratingMatch = ratingEl?.getAttribute('aria-label')?.match(/[\d.]+/);
+                  // Dirección
+                  const addrEls = card.querySelectorAll('.W4Efsd span, .Io6YTe');
+                  let address = '';
+                  addrEls.forEach(el => { if (el.textContent?.includes(',')) address = el.textContent.trim(); });
+                  out.push({ name, href: a.href, address, rating: ratingMatch ? parseFloat(ratingMatch[0]) : null });
+                  return;
+                }
+              }
             }
+            // Fallback: usar texto del enlace
+            const name = a.querySelector('h3, [class*="fontHeadline"]')?.textContent?.trim()
+                       || a.getAttribute('aria-label')?.trim();
+            if (name) out.push({ name, href: a.href, address: '', rating: null });
           });
-          return items;
+          return out;
         });
 
-        L.info(`Found ${places.length} places`);
+        L.info(`✅ Encontrados ${places.length} lugares en Maps`);
 
         for (const place of places.slice(0, maxResults)) {
-          await crawler.requestQueue?.addRequest({ url: place.href, label: 'DETAIL', userData: { place } });
+          await crawler.requestQueue?.addRequest({
+            url: place.href,
+            label: 'DETAIL',
+            userData: { place },
+            uniqueKey: place.href,
+          });
         }
 
       } else if (request.label === 'DETAIL') {
         if (results.length >= maxResults) return;
         const { place } = request.userData;
 
-        await page.waitForSelector('.DUwDvf, h1, [data-attrid="title"]', { timeout: 12000 }).catch(() => {});
+        // Esperar que cargue la ficha del negocio
+        await page.waitForSelector('.DUwDvf, h1.fontHeadlineLarge, [data-attrid="title"]', { timeout: 15000 })
+          .catch(() => {});
         await sleep(800);
 
         const html = await page.content();
         const text = await page.evaluate(() => document.body?.innerText || '');
 
-        // Phone from Maps
+        // Teléfono — buscamos el enlace tel: directo
         const phone = await page.evaluate(() => {
           const tel = document.querySelector('a[href^="tel:"]');
           if (tel) return tel.href.replace('tel:', '').trim();
-          const btn = document.querySelector('[data-item-id*="phone"], [aria-label*="Teléfono"], [aria-label*="Phone number"]');
-          return btn?.getAttribute('aria-label')?.replace(/[^\d+\s()-]/g, '').trim() || null;
+          const elems = document.querySelectorAll('[data-item-id], [aria-label]');
+          for (const el of elems) {
+            const label = el.getAttribute('aria-label') || el.getAttribute('data-item-id') || '';
+            if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('teléfono') || label.toLowerCase().includes('telef')) {
+              const match = label.match(/[\+\d][\d\s\-().]{7,}/);
+              if (match) return match[0].trim();
+            }
+          }
+          return null;
         });
 
-        // Website
+        // Web
         const website = await page.evaluate(() => {
-          const a = document.querySelector('[data-item-id="authority"] a, a[aria-label*="Sitio web"], a[aria-label*="Website"], a[data-tooltip*="eb"]');
-          return a?.href || null;
+          const sel = [
+            '[data-item-id="authority"] a',
+            'a[aria-label*="itio web"]',
+            'a[aria-label*="Website"]',
+            'a[data-tooltip="Open website"]',
+            'a[jsaction*="pane.website"]',
+          ];
+          for (const s of sel) {
+            const el = document.querySelector(s);
+            if (el?.href && !el.href.includes('google.com')) return el.href;
+          }
+          return null;
         });
 
         let emails = extractEmailsFromText(text + ' ' + html);
         let waNumbers = extractWhatsAppFromContent(html, text);
         let phones = phone ? [phone, ...extractPhoneNumbers(text)] : extractPhoneNumbers(text);
 
-        // Scrape website
-        if (website && website.startsWith('http') && !website.includes('google.com') && !website.includes('goo.gl')) {
+        // Visitar web del negocio para extraer email y WA
+        if (website && website.startsWith('http') && !website.includes('google.com')) {
           try {
             await page.goto(website, { waitUntil: 'domcontentloaded', timeout: 20000 });
-            await sleep(800);
-            const sHtml = await page.content();
-            const sText = await page.evaluate(() => document.body?.innerText || '');
-            emails = [...new Set([...emails, ...extractEmailsFromText(sHtml + ' ' + sText)])];
-            waNumbers = [...new Set([...waNumbers, ...extractWhatsAppFromContent(sHtml, sText)])];
-            // Try /contacto
+            await sleep(700);
+            const wHtml = await page.content();
+            const wText = await page.evaluate(() => document.body?.innerText || '');
+            emails = [...new Set([...emails, ...extractEmailsFromText(wHtml + ' ' + wText)])];
+            waNumbers = [...new Set([...waNumbers, ...extractWhatsAppFromContent(wHtml, wText)])];
+
+            // Buscar en /contacto si no hay email aún
             if (emails.length === 0) {
-              try {
-                await page.goto(new URL('/contacto', website).href, { waitUntil: 'domcontentloaded', timeout: 10000 });
-                const cHtml = await page.content();
-                const cText = await page.evaluate(() => document.body?.innerText || '');
-                emails = [...new Set([...emails, ...extractEmailsFromText(cHtml + ' ' + cText)])];
-                waNumbers = [...new Set([...waNumbers, ...extractWhatsAppFromContent(cHtml, cText)])];
-              } catch { /* no /contacto */ }
+              for (const path of ['/contacto', '/contact', '/contacta', '/sobre-nosotros']) {
+                try {
+                  await page.goto(new URL(path, website).href, { waitUntil: 'domcontentloaded', timeout: 8000 });
+                  const cHtml = await page.content();
+                  const cText = await page.evaluate(() => document.body?.innerText || '');
+                  const newEmails = extractEmailsFromText(cHtml + ' ' + cText);
+                  const newWa = extractWhatsAppFromContent(cHtml, cText);
+                  if (newEmails.length > 0) { emails = [...new Set([...emails, ...newEmails])]; break; }
+                  if (newWa.length > 0) waNumbers = [...new Set([...waNumbers, ...newWa])];
+                } catch { /* continuar */ }
+              }
             }
-          } catch { /* unreachable */ }
+          } catch { /* web inaccesible */ }
         }
+
+        emails = [...new Set(emails)].filter(Boolean);
+        phones = [...new Set(phones)].filter(Boolean);
 
         const bestEmail = emails
           .map(e => ({ email: e, score: getEmailConfidenceScore(e, place.name) }))
@@ -189,21 +251,21 @@ export async function scrapeGoogleMaps({ industry, country, city, maxResults, pr
           allPhones: phones.slice(0, 5),
           googleMapsUrl: place.href,
           source: 'google_maps',
-          scrapedAt: new Date().toISOString()
+          scrapedAt: new Date().toISOString(),
         };
 
         results.push(lead);
         await pushData(lead);
-        L.info(`✅ ${lead.businessName} | Email: ${lead.email || '-'} | WA: ${lead.whatsapp || '-'}`);
+        L.info(`✅ ${lead.businessName} | 📧 ${lead.email || '-'} | 📱 ${lead.whatsapp || '-'}`);
       }
     },
 
     failedRequestHandler({ request, log: L }) {
-      L.warning(`Failed: ${request.url}`);
-    }
+      L.warning(`⚠️ Fallo: ${request.url}`);
+    },
   });
 
   await crawler.run([{ url: searchUrl, label: 'SEARCH' }]);
-  log.info(`✅ Google Maps done. ${results.length} leads.`);
+  log.info(`✅ Google Maps: ${results.length} leads`);
   return results;
 }
