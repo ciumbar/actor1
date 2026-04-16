@@ -7,6 +7,7 @@
     "industry": {
       "title": "🏭 Sector",
       "type": "string",
+      "description": "Selecciona el sector o industria de los negocios a buscar.",
       "editor": "select",
       "default": "medical_clinics",
       "enum": ["restaurants","hotels","real_estate","construction","law_firms","medical_clinics","dentists","gyms_fitness","beauty_salons","auto_dealerships","accounting_finance","it_technology","marketing_agencies","retail_stores","education_schools","logistics_transport","manufacturing","travel_agencies","insurance","e_commerce"],
@@ -15,6 +16,7 @@
     "country": {
       "title": "🌍 País",
       "type": "string",
+      "description": "Selecciona el país objetivo para la búsqueda de leads.",
       "editor": "select",
       "default": "spain",
       "enum": ["spain","mexico","argentina","colombia","chile","peru","united_states","united_kingdom","france","germany","italy","portugal","brazil","uruguay","venezuela","ecuador","bolivia","paraguay","panama","costa_rica"],
@@ -31,6 +33,7 @@
     "maxResults": {
       "title": "📊 Máximo de resultados",
       "type": "integer",
+      "description": "Número máximo de leads a extraer por ejecución.",
       "editor": "number",
       "default": 50,
       "minimum": 1,
@@ -39,6 +42,7 @@
     "sources": {
       "title": "🔍 Fuentes",
       "type": "array",
+      "description": "Selecciona las fuentes de datos a usar para extraer los leads.",
       "editor": "select",
       "default": ["google_maps", "yellow_pages"],
       "items": {
@@ -50,6 +54,7 @@
     "proxyConfiguration": {
       "title": "🔒 Proxy",
       "type": "object",
+      "description": "Configuración de proxy para evitar bloqueos. Se recomienda usar proxies residenciales.",
       "editor": "proxy",
       "default": { "useApifyProxy": true, "apifyProxyGroups": ["RESIDENTIAL"] }
     }
