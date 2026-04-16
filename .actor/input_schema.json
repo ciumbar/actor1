@@ -131,15 +131,15 @@
       "default": ["google_maps", "yellow_pages"],
       "items": {
         "type": "string",
-        "enum": ["google_maps", "yellow_pages", "yelp", "linkedin", "instagram"]
-      },
-      "enumTitles": [
-        "📍 Google Maps",
-        "📒 Yellow Pages / PáginasAmarillas",
-        "⭐ Yelp",
-        "💼 LinkedIn",
-        "📸 Instagram Business"
-      ]
+        "enum": ["google_maps", "yellow_pages", "yelp", "linkedin", "instagram"],
+        "enumTitles": [
+          "📍 Google Maps",
+          "📒 Yellow Pages / PáginasAmarillas",
+          "⭐ Yelp",
+          "💼 LinkedIn",
+          "📸 Instagram Business"
+        ]
+      }
     },
     "verifyEmails": {
       "title": "✅ Verify Emails",
