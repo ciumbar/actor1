@@ -123,21 +123,19 @@
       "minimum": 1,
       "maximum": 5000
     },
-    "sources": {
-      "title": "🔍 Data Sources",
-      "type": "array",
-      "description": "Select which sources to scrape.",
-      "editor": "select",
-      "default": ["google_maps", "yellow_pages"],
-      "items": {
-        "type": "string",
-        "enum": ["google_maps", "yellow_pages", "yelp", "linkedin", "instagram"],
-        "enumTitles": [
-          "📍 Google Maps",
-          "📒 Yellow Pages / PáginasAmarillas",
-          "⭐ Yelp",
-          "💼 LinkedIn",
-          "📸 Instagram Business"
+   "sources": {
+  "title": "🔍 Data Sources",
+  "type": "array",
+  "description": "Select which sources to scrape.",
+  "editor": "select",
+  "default": ["yelp", "hotfrog", "yellow_pages"],
+  "items": {
+    "type": "string",
+    "enum": ["yelp", "hotfrog", "yellow_pages"],
+    "enumTitles": [
+      "⭐ Yelp",
+      "🔥 Hotfrog",
+      "📒 Yellow Pages / PáginasAmarillas"
         ]
       }
     },
