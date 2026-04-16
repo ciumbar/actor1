@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "lead-scraper-email-whatsapp",
+  "title": "Lead Scraper – Verified Email & WhatsApp",
+  "description": "Extract verified business emails and WhatsApp contacts filtered by industry, country and city from multiple sources (Google Maps, Yellow Pages, Yelp).",
+  "version": "1.0",
+  "buildTag": "latest",
+  "environmentVariables": {},
+  "dockerfile": "./Dockerfile",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Leads Overview",
+          "transformation": {
+            "fields": [
+              "businessName",
+              "industry",
+              "country",
+              "city",
+              "email",
+              "emailVerified",
+              "whatsapp",
+              "whatsappVerified",
+              "phone",
+              "website",
+              "address",
+              "rating",
+              "reviewCount",
+              "source",
+              "scrapedAt"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "businessName": { "label": "Business", "format": "text" },
+              "industry": { "label": "Industry", "format": "text" },
+              "email": { "label": "Email", "format": "text" },
+              "emailVerified": { "label": "✅ Email OK", "format": "boolean" },
+              "whatsapp": { "label": "WhatsApp", "format": "text" },
+              "whatsappVerified": { "label": "✅ WA OK", "format": "boolean" },
+              "city": { "label": "City", "format": "text" },
+              "rating": { "label": "⭐ Rating", "format": "number" },
+              "source": { "label": "Source", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

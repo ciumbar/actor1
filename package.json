@@ -1,0 +1,29 @@
+{
+  "name": "lead-scraper-email-whatsapp",
+  "version": "1.0.0",
+  "description": "Apify actor to scrape verified emails and WhatsApp contacts by industry, country and city",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "APIFY_IS_AT_HOME=0 node src/main.js"
+  },
+  "dependencies": {
+    "apify": "^3.2.2",
+    "crawlee": "^3.10.0",
+    "playwright": "^1.44.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "apify",
+    "lead-generation",
+    "email-scraper",
+    "whatsapp",
+    "b2b",
+    "contacts"
+  ],
+  "author": "LeadScraper",
+  "license": "Apache-2.0"
+}

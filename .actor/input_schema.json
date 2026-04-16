@@ -1,0 +1,167 @@
+{
+  "title": "Lead Scraper – Email & WhatsApp",
+  "description": "Extracts verified emails and WhatsApp contacts from business directories filtered by industry, country and city.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "industry": {
+      "title": "🏭 Industry / Sector",
+      "type": "string",
+      "description": "Select the industry or business sector to search for leads.",
+      "editor": "select",
+      "default": "restaurants",
+      "enum": [
+        "restaurants",
+        "hotels",
+        "real_estate",
+        "construction",
+        "law_firms",
+        "medical_clinics",
+        "dentists",
+        "gyms_fitness",
+        "beauty_salons",
+        "auto_dealerships",
+        "accounting_finance",
+        "it_technology",
+        "marketing_agencies",
+        "retail_stores",
+        "education_schools",
+        "logistics_transport",
+        "manufacturing",
+        "travel_agencies",
+        "insurance",
+        "e_commerce"
+      ],
+      "enumTitles": [
+        "🍽️ Restaurants & Food",
+        "🏨 Hotels & Hospitality",
+        "🏠 Real Estate",
+        "🏗️ Construction",
+        "⚖️ Law Firms",
+        "🏥 Medical Clinics",
+        "🦷 Dentists",
+        "💪 Gyms & Fitness",
+        "💅 Beauty Salons & Spas",
+        "🚗 Auto Dealerships",
+        "💰 Accounting & Finance",
+        "💻 IT & Technology",
+        "📣 Marketing Agencies",
+        "🛒 Retail Stores",
+        "📚 Education & Schools",
+        "🚚 Logistics & Transport",
+        "🏭 Manufacturing",
+        "✈️ Travel Agencies",
+        "🛡️ Insurance",
+        "🛍️ E-Commerce"
+      ]
+    },
+    "country": {
+      "title": "🌍 Country",
+      "type": "string",
+      "description": "Select the target country.",
+      "editor": "select",
+      "default": "spain",
+      "enum": [
+        "spain",
+        "mexico",
+        "argentina",
+        "colombia",
+        "chile",
+        "peru",
+        "united_states",
+        "united_kingdom",
+        "france",
+        "germany",
+        "italy",
+        "portugal",
+        "brazil",
+        "uruguay",
+        "venezuela",
+        "ecuador",
+        "bolivia",
+        "paraguay",
+        "panama",
+        "costa_rica"
+      ],
+      "enumTitles": [
+        "🇪🇸 Spain",
+        "🇲🇽 Mexico",
+        "🇦🇷 Argentina",
+        "🇨🇴 Colombia",
+        "🇨🇱 Chile",
+        "🇵🇪 Peru",
+        "🇺🇸 United States",
+        "🇬🇧 United Kingdom",
+        "🇫🇷 France",
+        "🇩🇪 Germany",
+        "🇮🇹 Italy",
+        "🇵🇹 Portugal",
+        "🇧🇷 Brazil",
+        "🇺🇾 Uruguay",
+        "🇻🇪 Venezuela",
+        "🇪🇨 Ecuador",
+        "🇧🇴 Bolivia",
+        "🇵🇾 Paraguay",
+        "🇵🇦 Panama",
+        "🇨🇷 Costa Rica"
+      ]
+    },
+    "city": {
+      "title": "🏙️ City",
+      "type": "string",
+      "description": "Enter the city name to focus the search. Leave empty to search the entire country.",
+      "editor": "textfield",
+      "default": "",
+      "example": "Barcelona"
+    },
+    "maxResults": {
+      "title": "📊 Maximum Results",
+      "type": "integer",
+      "description": "Maximum number of leads to extract.",
+      "editor": "number",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "sources": {
+      "title": "🔍 Data Sources",
+      "type": "array",
+      "description": "Select which sources to scrape.",
+      "editor": "select",
+      "default": ["google_maps", "yellow_pages"],
+      "items": {
+        "type": "string",
+        "enum": ["google_maps", "yellow_pages", "yelp", "linkedin", "instagram"]
+      },
+      "enumTitles": [
+        "📍 Google Maps",
+        "📒 Yellow Pages / PáginasAmarillas",
+        "⭐ Yelp",
+        "💼 LinkedIn",
+        "📸 Instagram Business"
+      ]
+    },
+    "verifyEmails": {
+      "title": "✅ Verify Emails",
+      "type": "boolean",
+      "description": "Perform MX record validation and SMTP verification on found emails.",
+      "default": true
+    },
+    "extractWhatsApp": {
+      "title": "📱 Extract WhatsApp Numbers",
+      "type": "boolean",
+      "description": "Extract and verify WhatsApp business numbers.",
+      "default": true
+    },
+    "proxyConfiguration": {
+      "title": "🔒 Proxy Configuration",
+      "type": "object",
+      "description": "Configure proxy to avoid blocks.",
+      "editor": "proxy",
+      "default": {
+        "useApifyProxy": true
+      }
+    }
+  },
+  "required": ["industry", "country"]
+}
