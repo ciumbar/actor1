@@ -3,9 +3,8 @@
  * Extracts business listings with contacts from Google Maps
  */
 import { PlaywrightCrawler, sleep } from 'crawlee';
-import { extractEmailsFromText, decodeObfuscatedEmail, getEmailConfidenceScore } from './emailVerifier.js';
-import { extractPhoneNumbers, extractWhatsAppFromContent, isProbablyWhatsApp, normalizePhoneNumber, COUNTRY_CODES } from './whatsappVerifier.js';
-
+import { extractEmailsFromText, decodeObfuscatedEmail, getEmailConfidenceScore } from '../emailVerifier.js';
+import { extractPhoneNumbers, extractWhatsAppFromContent, isProbablyWhatsApp, normalizePhoneNumber, COUNTRY_CODES } from '../whatsappVerifier.js';
 const INDUSTRY_QUERIES = {
   restaurants: 'restaurantes',
   hotels: 'hoteles',
