@@ -1,164 +1,57 @@
 {
   "title": "Lead Scraper – Email & WhatsApp",
-  "description": "Extracts verified emails and WhatsApp contacts from business directories filtered by industry, country and city.",
+  "description": "Extrae emails verificados y WhatsApp de negocios por sector, país y ciudad.",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
     "industry": {
-      "title": "🏭 Industry / Sector",
+      "title": "🏭 Sector",
       "type": "string",
-      "description": "Select the industry or business sector to search for leads.",
       "editor": "select",
-      "default": "restaurants",
-      "enum": [
-        "restaurants",
-        "hotels",
-        "real_estate",
-        "construction",
-        "law_firms",
-        "medical_clinics",
-        "dentists",
-        "gyms_fitness",
-        "beauty_salons",
-        "auto_dealerships",
-        "accounting_finance",
-        "it_technology",
-        "marketing_agencies",
-        "retail_stores",
-        "education_schools",
-        "logistics_transport",
-        "manufacturing",
-        "travel_agencies",
-        "insurance",
-        "e_commerce"
-      ],
-      "enumTitles": [
-        "🍽️ Restaurants & Food",
-        "🏨 Hotels & Hospitality",
-        "🏠 Real Estate",
-        "🏗️ Construction",
-        "⚖️ Law Firms",
-        "🏥 Medical Clinics",
-        "🦷 Dentists",
-        "💪 Gyms & Fitness",
-        "💅 Beauty Salons & Spas",
-        "🚗 Auto Dealerships",
-        "💰 Accounting & Finance",
-        "💻 IT & Technology",
-        "📣 Marketing Agencies",
-        "🛒 Retail Stores",
-        "📚 Education & Schools",
-        "🚚 Logistics & Transport",
-        "🏭 Manufacturing",
-        "✈️ Travel Agencies",
-        "🛡️ Insurance",
-        "🛍️ E-Commerce"
-      ]
+      "default": "medical_clinics",
+      "enum": ["restaurants","hotels","real_estate","construction","law_firms","medical_clinics","dentists","gyms_fitness","beauty_salons","auto_dealerships","accounting_finance","it_technology","marketing_agencies","retail_stores","education_schools","logistics_transport","manufacturing","travel_agencies","insurance","e_commerce"],
+      "enumTitles": ["🍽️ Restaurantes","🏨 Hoteles","🏠 Inmobiliaria","🏗️ Construcción","⚖️ Abogados","🏥 Clínicas Médicas","🦷 Dentistas","💪 Gimnasios","💅 Peluquerías y Salones","🚗 Concesionarios","💰 Gestoría y Asesoría","💻 Informática y Tech","📣 Agencias de Marketing","🛒 Tiendas","📚 Academias","🚚 Transportes","🏭 Industria","✈️ Agencias de Viajes","🛡️ Seguros","🛍️ E-Commerce"]
     },
     "country": {
-      "title": "🌍 Country",
+      "title": "🌍 País",
       "type": "string",
-      "description": "Select the target country.",
       "editor": "select",
       "default": "spain",
-      "enum": [
-        "spain",
-        "mexico",
-        "argentina",
-        "colombia",
-        "chile",
-        "peru",
-        "united_states",
-        "united_kingdom",
-        "france",
-        "germany",
-        "italy",
-        "portugal",
-        "brazil",
-        "uruguay",
-        "venezuela",
-        "ecuador",
-        "bolivia",
-        "paraguay",
-        "panama",
-        "costa_rica"
-      ],
-      "enumTitles": [
-        "🇪🇸 Spain",
-        "🇲🇽 Mexico",
-        "🇦🇷 Argentina",
-        "🇨🇴 Colombia",
-        "🇨🇱 Chile",
-        "🇵🇪 Peru",
-        "🇺🇸 United States",
-        "🇬🇧 United Kingdom",
-        "🇫🇷 France",
-        "🇩🇪 Germany",
-        "🇮🇹 Italy",
-        "🇵🇹 Portugal",
-        "🇧🇷 Brazil",
-        "🇺🇾 Uruguay",
-        "🇻🇪 Venezuela",
-        "🇪🇨 Ecuador",
-        "🇧🇴 Bolivia",
-        "🇵🇾 Paraguay",
-        "🇵🇦 Panama",
-        "🇨🇷 Costa Rica"
-      ]
+      "enum": ["spain","mexico","argentina","colombia","chile","peru","united_states","united_kingdom","france","germany","italy","portugal","brazil","uruguay","venezuela","ecuador","bolivia","paraguay","panama","costa_rica"],
+      "enumTitles": ["🇪🇸 España","🇲🇽 México","🇦🇷 Argentina","🇨🇴 Colombia","🇨🇱 Chile","🇵🇪 Perú","🇺🇸 Estados Unidos","🇬🇧 Reino Unido","🇫🇷 Francia","🇩🇪 Alemania","🇮🇹 Italia","🇵🇹 Portugal","🇧🇷 Brasil","🇺🇾 Uruguay","🇻🇪 Venezuela","🇪🇨 Ecuador","🇧🇴 Bolivia","🇵🇾 Paraguay","🇵🇦 Panamá","🇨🇷 Costa Rica"]
     },
     "city": {
-      "title": "🏙️ City",
+      "title": "🏙️ Ciudad",
       "type": "string",
-      "description": "Enter the city name to focus the search. Leave empty to search the entire country.",
+      "description": "Ciudad a buscar. Déjalo vacío para buscar en todo el país.",
       "editor": "textfield",
       "default": "",
-      "example": "Barcelona"
+      "example": "Sevilla"
     },
     "maxResults": {
-      "title": "📊 Maximum Results",
+      "title": "📊 Máximo de resultados",
       "type": "integer",
-      "description": "Maximum number of leads to extract.",
       "editor": "number",
-      "default": 100,
+      "default": 50,
       "minimum": 1,
-      "maximum": 5000
+      "maximum": 500
     },
-   "sources": {
-  "title": "🔍 Data Sources",
-  "type": "array",
-  "description": "Select which sources to scrape.",
-  "editor": "select",
-  "default": ["yelp", "hotfrog", "yellow_pages"],
-  "items": {
-    "type": "string",
-    "enum": ["yelp", "hotfrog", "yellow_pages"],
-    "enumTitles": [
-      "⭐ Yelp",
-      "🔥 Hotfrog",
-      "📒 Yellow Pages / PáginasAmarillas"
-        ]
+    "sources": {
+      "title": "🔍 Fuentes",
+      "type": "array",
+      "editor": "select",
+      "default": ["google_maps", "yellow_pages"],
+      "items": {
+        "type": "string",
+        "enum": ["google_maps", "yellow_pages"],
+        "enumTitles": ["🗺️ Google Maps", "📒 PáginasAmarillas"]
       }
-    },
-    "verifyEmails": {
-      "title": "✅ Verify Emails",
-      "type": "boolean",
-      "description": "Perform MX record validation and SMTP verification on found emails.",
-      "default": true
-    },
-    "extractWhatsApp": {
-      "title": "📱 Extract WhatsApp Numbers",
-      "type": "boolean",
-      "description": "Extract and verify WhatsApp business numbers.",
-      "default": true
     },
     "proxyConfiguration": {
-      "title": "🔒 Proxy Configuration",
+      "title": "🔒 Proxy",
       "type": "object",
-      "description": "Configure proxy to avoid blocks.",
       "editor": "proxy",
-      "default": {
-        "useApifyProxy": true
-      }
+      "default": { "useApifyProxy": true, "apifyProxyGroups": ["RESIDENTIAL"] }
     }
   },
   "required": ["industry", "country"]
